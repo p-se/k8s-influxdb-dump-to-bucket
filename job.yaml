@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: influx-backup
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: influx-backup
+          image: influxdb:1.8.10
+          command:
+            - /bin/bash
+            - -c
+            - |
+              apt update && apt install awscli -y
+              backup_dir=/tmp/backups
+              echo "Backing up to $INFLUXDB_HOST"
+              influxd backup -host $INFLUXDB_HOST -portable $backup_dir
+              # aws s3 mb s3://$BUCKET_NAME
+              aws s3 cp $backup_dir s3://$BUCKET_NAME --recursive
+          envFrom:
+            - configMapRef:
+                name: influx-to-bucket
+            - secretRef:
+                name: influx-to-bucket
+  backoffLimit: 4

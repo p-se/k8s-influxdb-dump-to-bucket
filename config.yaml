@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: influx-to-bucket
+data:
+  INFLUXDB_HOST: "localhost:8088" # host:port
+  BUCKET_NAME: influx-backup
